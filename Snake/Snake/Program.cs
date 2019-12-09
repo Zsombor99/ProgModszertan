@@ -1,180 +1,196 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Snake
 {
     class Program
     {
-        const int WIDTH = 40;
-        const int HEIGTH = 20;
-        ConsoleKeyInfo consoleKey;
-        Coordinate snakeHead = new Coordinate();
-        List<Coordinate> snakeBody = new List<Coordinate>();
-        Direction direction;
-        Coordinate food = new Coordinate();
-
+        //Alap egység definiálása
+        class sprite
+        {
+            public int xpos { get; set; }
+            public int ypos { get; set; }
+            public ConsoleColor mycolor { get; set; }
+        }
         static void Main(string[] args)
         {
-            Program p = new Program();
+            //Méret állítása (szükség esetén)
+            //Console.WindowHeight = 16;
+            //Console.WindowWidth = 32;
 
-            p.snakeHead.X = WIDTH / 2;
-            p.snakeHead.Y = HEIGTH / 2;
-            p.direction = Direction.NEUTRAL;
-            p.food = p.getFoodCoordinate();
+            int screenwidth = Console.WindowWidth;
+            int screenheight = Console.WindowHeight;
 
-            while (true)
-            {
-                p.drawContainer();
-                p.movementInput();
-                p.calculation();
-            }
-        }
-
-        public void drawContainer()
-        {
-            Console.Clear();
-            //felső szegély
-            Console.Write("+");
-            for (int i = 0; i < WIDTH; i++)
-            {
-                Console.Write("-");
-            }
-            Console.Write("+\n");
-
-            //Köztes rész
-            for (int y = 0; y < HEIGTH; y++)
-            {
-                Console.Write("|");
-                for (int x = 0; x < WIDTH; x++)
-                {
-                    if (x == snakeHead.X && y == snakeHead.Y)
-                        Console.Write("O");
-                    else if (x == food.X && y == food.Y)
-                        Console.Write("#");
-                    else
-                    {
-                        bool isSnakeBody = false;
-                        for (int i = 0; i < snakeBody.Count; i++)
-                        {
-                            if (x == snakeBody[i].X && y == snakeBody[i].Y)
-                            {
-                                Console.Write("O");
-                                isSnakeBody = true;
-                                break;
-                            }
-                        }
-                        if (!isSnakeBody)
-                        {
-                            Console.Write(" ");
-                        }
-                    }
-
-                }
-                Console.Write("|\n");
-            }
-
-            //Alsó szegély
-            Console.Write("+");
-            for (int i = 0; i < WIDTH; i++)
-            {
-                Console.Write("-");
-            }
-            Console.Write("+\n");
-
-            Console.WriteLine("Kigyó hossza:{0} ", snakeBody.Count);
-        }
-
-        public void movementInput()
-        {
-            if (Console.KeyAvailable)
-            {
-                consoleKey = Console.ReadKey(true);
-                switch (consoleKey.Key)
-                {
-                    case ConsoleKey.W:
-                       if(direction != Direction.DOWN) direction = Direction.UP;
-                        break;
-                    case ConsoleKey.D:
-                        if (direction != Direction.LEFT) direction = Direction.RIGHT;
-                        break;
-                    case ConsoleKey.S:
-                        if (direction != Direction.UP) direction = Direction.DOWN;
-                        break;
-                    case ConsoleKey.A:
-                        if (direction != Direction.RIGHT) direction = Direction.LEFT;
-                        break;
-                }
-            }
-
-        }
-
-        public void calculation()
-        {
-            snakeBody.Add(snakeHead);
-            snakeBody.RemoveAt(snakeBody.Count()-1);
-
-            switch (direction)
-            {
-                case Direction.UP:
-                    snakeHead.Y--;
-                    break;
-                case Direction.RIGHT:
-                    snakeHead.X++;
-                    break;
-                case Direction.DOWN:
-                    snakeHead.Y++;
-                    break;
-                case Direction.LEFT:
-                    snakeHead.X--;
-                    break;
-            }
-
-            if (snakeHead.X == -1)
-                snakeHead.X = WIDTH - 1;
-            else if (snakeHead.X == WIDTH)
-                snakeHead.X = 0;
-
-            if (snakeHead.Y == -1)
-                snakeHead.Y = HEIGTH - 1;
-            else if (snakeHead.Y == HEIGTH)
-                snakeHead.Y = 0;
-
-            if (snakeHead.X == food.X && snakeHead.Y == food.Y)
-            {
-                food = getFoodCoordinate();
-
-                snakeBody.Add(snakeHead);
-            }
-
-        }
-
-        public Coordinate getFoodCoordinate()
-        {
-            Coordinate c = new Coordinate();
             Random rnd = new Random();
 
+            //Base
+            int score = 1;
+            int gameover = 0;
+
+            //Kígyó feje, kezdő "koordináta" + színe + értelme(iránya)
+            sprite shead = new sprite();
+            shead.xpos = screenwidth / 2;
+            shead.ypos = screenheight / 2;
+            shead.mycolor = ConsoleColor.Red;
+            string movement = "RIGHT";
+
+            //Kígyó teste
+            List<int> xbody = new List<int>();
+            List<int> ybody = new List<int>();
+
+            //Kaja random helyre
+            int foodx = rnd.Next(0, screenwidth);
+            int foody = rnd.Next(0, screenheight);
+
+            //Idő az update-hez (ne villogjon a kép)
+            DateTime time1 = DateTime.Now;
+            DateTime time2 = DateTime.Now;
+
+            string buttonpressed = "no";
+
+            //Gameloop
             while (true)
             {
-                c.X = rnd.Next() % WIDTH;
-                c.Y = rnd.Next() % HEIGTH;
-                int i;
+                Console.Clear();
 
-                for (i = 1; i < snakeBody.Count; i += 2)
+                //State check
+                if (shead.xpos == screenwidth - 1 || shead.xpos == 0 || shead.ypos == screenheight - 1 || shead.ypos == 0)
                 {
-                    if (snakeBody[i].X == c.X && snakeBody[i].Y == c.Y)
+                    gameover = 1;
+                }
+
+                //Keret
+                for (int i = 0; i < screenwidth; i++)
+                {
+                    Console.SetCursorPosition(i, 0);
+                    Console.Write("#");
+                }
+                for (int i = 0; i < screenwidth; i++)
+                {
+                    Console.SetCursorPosition(i, screenheight - 1);
+                    Console.Write("#");
+                }
+                for (int i = 0; i < screenheight; i++)
+                {
+                    Console.SetCursorPosition(0, i);
+                    Console.Write("#");
+                }
+                for (int i = 0; i < screenheight; i++)
+                {
+                    Console.SetCursorPosition(screenwidth - 1, i);
+                    Console.Write("#");
+                }
+
+                //Console.ForegroundColor = ConsoleColor.Green;
+
+                //Score system
+                if (foodx == shead.xpos && foody == shead.ypos)
+                {
+                    score++;
+                    foodx = rnd.Next(1, screenwidth - 2);
+                    foody = rnd.Next(1, screenheight - 2);
+                }
+
+                //Test logika
+                for (int i = 0; i < xbody.Count(); i++)
+                {
+                    Console.SetCursorPosition(xbody[i], ybody[i]);
+                    Console.Write("o");
+                    if (xbody[i] == shead.xpos && ybody[i] == shead.ypos)
                     {
-                        break;
+                        gameover = 1;
                     }
                 }
 
-                if (!(c.X == snakeHead.X && c.Y == snakeHead.Y) && snakeBody.Count < i)
+                //Ha gameover, akkor kilépünk a gameloopból
+                if (gameover == 1)
                 {
-                    return c;
+                    break;
+                }
+
+                //Start setup
+                Console.SetCursorPosition(shead.xpos, shead.ypos);
+                Console.ForegroundColor = shead.mycolor;
+                //Kígyó feje
+                Console.Write("O");
+                Console.SetCursorPosition(foodx, foody);
+                Console.ForegroundColor = ConsoleColor.Green;
+                //Kaja kinézete
+                Console.Write("X");
+                time1 = DateTime.Now;
+                buttonpressed = "no";
+                while (true)
+                {
+                    time2 = DateTime.Now;
+                    //Update intervallum (két update között eltelt idő definiálása)
+                    //A játék dinamikusságának növelés/csökkentése
+                    //A 150 msec ideális, mivel így még normálisan lehet irányítani a kigyót
+                    //Kisebb értéknél nyomkodni kell a gombokat, hogy érzékelje az irányváltoztatást
+                    if (time2.Subtract(time1).TotalMilliseconds > 150) { break; }
+
+                    //User Input definiálása
+                    if (Console.KeyAvailable)
+                    {
+                        ConsoleKeyInfo toets = Console.ReadKey(true);
+                        if (toets.Key.Equals(ConsoleKey.UpArrow) && movement != "DOWN" && buttonpressed == "no")
+                        {
+                            movement = "UP";
+                            buttonpressed = "yes";
+                        }
+                        if (toets.Key.Equals(ConsoleKey.DownArrow) && movement != "UP" && buttonpressed == "no")
+                        {
+                            movement = "DOWN";
+                            buttonpressed = "yes";
+                        }
+                        if (toets.Key.Equals(ConsoleKey.LeftArrow) && movement != "RIGHT" && buttonpressed == "no")
+                        {
+                            movement = "LEFT";
+                            buttonpressed = "yes";
+                        }
+                        if (toets.Key.Equals(ConsoleKey.RightArrow) && movement != "LEFT" && buttonpressed == "no")
+                        {
+                            movement = "RIGHT";
+                            buttonpressed = "yes";
+                        }
+                    }
+                }
+
+                //Test mozgás
+                xbody.Add(shead.xpos);
+                ybody.Add(shead.ypos);
+
+                //Mozgás
+                switch (movement)
+                {
+                    case "UP":
+                        shead.ypos--;
+                        break;
+                    case "DOWN":
+                        shead.ypos++;
+                        break;
+                    case "LEFT":
+                        shead.xpos--;
+                        break;
+                    case "RIGHT":
+                        shead.xpos++;
+                        break;
+                }
+
+                //A kígyó test utolsó elemének törlése minden update után (mozgás)
+                if (xbody.Count() > score)
+                {
+                    xbody.RemoveAt(0);
+                    ybody.RemoveAt(0);
                 }
             }
+
+            //Eredmény kiírása
+            string mszoveg = "Game over! Pontszám: ";
+            Console.SetCursorPosition((screenwidth / 2) - (mszoveg.Length / 2), screenheight / 2);
+            Console.WriteLine(mszoveg + score);
+            Console.SetCursorPosition(screenwidth / 2, screenheight / 2 + 1);
         }
     }
 }
