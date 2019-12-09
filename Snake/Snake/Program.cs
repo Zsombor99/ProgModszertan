@@ -45,10 +45,11 @@ namespace Snake
             int foody = rnd.Next(0, screenheight);
 
             //Idő az update-hez (ne villogjon a kép)
-            DateTime time1 = DateTime.Now;
-            DateTime time2 = DateTime.Now;
+            DateTime time1;
+            DateTime time2;
 
-            string buttonpressed = "no";
+            //Keystate check változó
+            string buttonpressed;
 
             //Gameloop
             while (true)
@@ -89,8 +90,8 @@ namespace Snake
                 if (foodx == shead.xpos && foody == shead.ypos)
                 {
                     score++;
-                    foodx = rnd.Next(1, screenwidth - 2);
-                    foody = rnd.Next(1, screenheight - 2);
+                    foodx = rnd.Next(1, screenwidth - 3);
+                    foody = rnd.Next(1, screenheight - 3);
                 }
 
                 //Test logika
@@ -133,23 +134,23 @@ namespace Snake
                     //User Input definiálása
                     if (Console.KeyAvailable)
                     {
-                        ConsoleKeyInfo toets = Console.ReadKey(true);
-                        if (toets.Key.Equals(ConsoleKey.UpArrow) && movement != "DOWN" && buttonpressed == "no")
+                        ConsoleKeyInfo mkeys = Console.ReadKey(true);
+                        if (mkeys.Key.Equals(ConsoleKey.UpArrow) && movement != "DOWN" && buttonpressed == "no")
                         {
                             movement = "UP";
                             buttonpressed = "yes";
                         }
-                        if (toets.Key.Equals(ConsoleKey.DownArrow) && movement != "UP" && buttonpressed == "no")
+                        if (mkeys.Key.Equals(ConsoleKey.DownArrow) && movement != "UP" && buttonpressed == "no")
                         {
                             movement = "DOWN";
                             buttonpressed = "yes";
                         }
-                        if (toets.Key.Equals(ConsoleKey.LeftArrow) && movement != "RIGHT" && buttonpressed == "no")
+                        if (mkeys.Key.Equals(ConsoleKey.LeftArrow) && movement != "RIGHT" && buttonpressed == "no")
                         {
                             movement = "LEFT";
                             buttonpressed = "yes";
                         }
-                        if (toets.Key.Equals(ConsoleKey.RightArrow) && movement != "LEFT" && buttonpressed == "no")
+                        if (mkeys.Key.Equals(ConsoleKey.RightArrow) && movement != "LEFT" && buttonpressed == "no")
                         {
                             movement = "RIGHT";
                             buttonpressed = "yes";
@@ -191,6 +192,7 @@ namespace Snake
             Console.SetCursorPosition((screenwidth / 2) - (mszoveg.Length / 2), screenheight / 2);
             Console.WriteLine(mszoveg + score);
             Console.SetCursorPosition(screenwidth / 2, screenheight / 2 + 1);
+            Console.ReadKey();
         }
     }
 }
